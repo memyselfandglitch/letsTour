@@ -1,7 +1,8 @@
 const { query } = require('express');
 const Tour = require('./../model/tourModel.js');
 const APIFeatures = require('./../utils/apiFeatures.js');
-const handlerFactory=require('./handlerFactory.js')
+const handlerFactory=require('./handlerFactory.js');
+
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // );
@@ -199,3 +200,58 @@ exports.deleteTour=handlerFactory.deleteOne(Tour);
 //   }
 
 // };
+
+exports.getToursWithin=async(req,res,next)=>{
+  //router
+  //.route('/tours-within/:dist/center/:latlng/unit/:unit',tourController.getToursWithin);
+  const {dist,latlng,unit}=req.params;
+  const [lat,lng]=latlng.split(',');
+  if(!lat||!lng)res.send(404).json({
+    status:'failed',
+    message:'please specify lat and lng'
+  })
+
+  const raidus=unit==='mi'?dist/3963.2:dist/6378.1;
+
+  const tours=await Tour.find({startLocation:{$geoWithin:{$centerSphere:[[lng,lat],raidus]}}
+  });
+
+  res.status(200).json({
+    status:'success',
+    results:tours.length,
+    tours
+  });
+}
+
+exports.getDistances = async(req,res,next)=>{
+  const {latlng,unit}=req.params;
+  const [lat,lng]=latlng.split(',');
+  if(!lat||!lng)res.send(404).json({
+    status:'failed',
+    message:'please specify lat and lng'
+  })
+  const multiplier=unit==='mi'?0.000621371:0.001;
+  const distances=await Tour.aggregate([
+    {
+      $geoNear:{
+        near:{
+          type:'Point',
+          coordinates:[lng*1,lat*1]
+        },
+        distanceField:'distance',
+        distanceMultiplier:multiplier
+      }
+    },{
+      $project:{
+        distance:1,
+        name:1
+      }
+    }
+  ]);
+  res.status(200).json({
+    status:'success',
+    results:distances
+  })
+}
+
+//{startLocation: {$geoWithin: { $centerSphere: [ [ -113.31030650669922, 37.23032838760387 ], 0.13205312720276013 ]}}}

@@ -83,5 +83,7 @@ reviewSchema.post(/^findOneAnd/,async function(next){
     console.log(this.r);
 })
 
+reviewSchema.index({tour:1,user:1},{unique:true});
+
 const Review=mongoose.model('review',reviewSchema);
 module.exports=Review;
