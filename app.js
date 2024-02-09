@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const path=require('path');
+const pug=require('pug');
 const rateLimit=require('express-rate-limit');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -56,7 +57,7 @@ app.use(limiter);
 // 3) ROUTES
 
 app.get('/',(req,res)=>{
-  res.status(200).render('base');
+  res.status(200).render('base',{tour:'Park Camper'});
 })
 
 app.use('/api/v1/tours', tourRouter);
