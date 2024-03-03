@@ -5,6 +5,7 @@ const pug=require('pug');
 const rateLimit=require('express-rate-limit');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const viewRouter=require('./routes/viewRoutes');
 const reviewRouter = require('./routes/reviewRoutes')
 const helmet=require('helmet');
 const mongoSanitize=require('express-mongo-sanitize');
@@ -47,19 +48,16 @@ app.use((req, res, next) => {
   next();
 });
 
-const limiter=rateLimit({
-  windowMs:60*60*1000,
-  max:100
-})
+// const limiter=rateLimit({
+//   windowMs:60*60*1000,
+//   max:100
+// })
 
-app.use(limiter);
+// app.use(limiter);
 
 // 3) ROUTES
 
-app.get('/',(req,res)=>{
-  res.status(200).render('base',{tour:'Park Camper'});
-})
-
+app.use('/',viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
